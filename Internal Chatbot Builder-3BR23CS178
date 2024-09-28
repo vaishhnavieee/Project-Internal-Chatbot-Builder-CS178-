@@ -1,0 +1,47 @@
+mport json
+import os
+import difflib
+
+def load_data(filename):
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            return json.load(f)
+    return {"responses": {}}
+
+def save_data(filename, data):
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)
+
+def chatbot():
+    filename = 'chatbot_data.json'
+    data = load_data(filename)
+
+    print("Hello! I'm your learning chatbot. Type 'exit' to stop the chat.")
+    
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() == 'exit':
+            print("Chatbot: Goodbye!")
+            break
+        
+        # Check if the user input matches any existing responses
+        if user_input in data["responses"]:
+            response = data["responses"][user_input]
+            print(f"Chatbot: {response}")
+        else:
+            # Find closest matches in the existing responses
+            existing_responses = list(data["responses"].keys())
+            closest_matches = difflib.get_close_matches(user_input, existing_responses, n=1, cutoff=0.5)
+            
+            if closest_matches:
+                print("Chatbot: I couldn't find an exact match, but did you mean:")
+                for match in closest_matches:
+                    print(f"- {match}: {data['responses'][match]}")
+            
+            response = input("Chatbot: I don't know the answer to that. What should I say in response? ")
+            data["responses"][user_input] = response
+            save_data(filename, data)
+            print(f"Chatbot: Thanks! I'll remember that.")
+
+if _name_ == "_main_":
+    chatbot()
